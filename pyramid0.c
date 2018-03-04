@@ -11,12 +11,11 @@ int rekey(XEvent* ev) {
     Display* dpy = ev->xkey.display;
     Window win = ev->xkey.window;
     int FillFace;                   /* face clear/repaint flag fo reset */  
-    KeySym ks;                                       /* Key symbol code */
-    ks = XKeycodeToKeysym(dpy, ev->xkey.keycode, 0);
-    if(ks == XK_F10)                     /* Press F10 for programm exit */
-        return 10;         /* exit return for event dispatcher in main() */
+    KeySym keysym = XKeycodeToKeysym(dpy, ev->xkey.keycode, 0);
+    if(keysym == XK_F10)                     /* Press F10 for programm exit */
+        return 0;         /* exit return for event dispatcher in main() */
     FillFace = (ev->xkey.state & Mod1Mask) ? NFACE : 0;
-    if(ks == XK_Escape)         /* Press Escape to redraw or clear faces*/ 
+    if(keysym == XK_Escape)         /* Press Escape to redraw or clear faces*/ 
         reset(dpy, win, FillFace);
     return 0;        /* continue return for event dispatcher in main() */
 }
@@ -32,12 +31,14 @@ int dispatch(Display* dpy, Window win, GC gc) {
             case Expose: /* Redraw graph in visible  window space */
                 if(event.xexpose.count > 0)
                     break;
-                putchar('E'); fflush(stdout);
-                  /* NoFillFace = 0; */ /* Uncomment for frame WM (olwm) */
+                /*putchar('E');*/ 
+                fflush(stdout);
+                NoFillFace = 0; // tut bil comment
                 regraph(dpy, win, gc, NoFillFace);
                 break;
             case ConfigureNotify: /* Reconfigure graph when resize window */
-                putchar('C'); fflush(stdout);
+                /* putchar('C'); */
+                fflush(stdout);
                 NoFillFace = reconf(event.xconfigure.width, event.xconfigure.height);
                 break;
             case ButtonPress: /* Repaint pointed face */
@@ -46,9 +47,10 @@ int dispatch(Display* dpy, Window win, GC gc) {
                 break;
             case FocusIn:  /* Sense resizing final for repaint WM (kde, gnome) */
                 NoFillFace = 0;
-                putchar('F'); fflush(stdout);
+                /* putchar('F'); */
+                fflush(stdout);
                 regraph(dpy, win, gc, NoFillFace);
-                /* reset(dpy, win, NFACE); */ /* uncomment for WMaker */
+                reset(dpy, win, NFACE);  /* uncomment for WMaker */
                 break;
             case KeyPress: /* Check KB key pressed */
                 done = rekey(&event);

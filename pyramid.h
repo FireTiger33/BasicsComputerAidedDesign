@@ -1,15 +1,15 @@
 /* Paint pyramid graph face header file */
 
-#define MB0 4                        /* extern face top number */
-#define NF3 4                        /* 3 top inner face number */
-/* #define NF4 ... */                /* Any top inner face number */
-#define NFACE (NF3)                  /* all inner face number (=4) */
-/* #define NFACE (NF3+NF4+ ... ) */ 
-#define NEDGE ((3*NF3+MB0)/2)        /* edge number (=8) */
+#define MB0 10                        /* extern face top number */
+#define NF4 3                        /* 4 top inner face number */
+#define NF5 8
+
+#define NFACE (NF4+NF5)                  /* all inner face number (=4) */
+#define NEDGE ((4*NF4+5*NF5+MB0)/2)        /* edge number (=8) */
 /* define NEDGE ((MB0+3*NF3+4*NF4+...)/2) */
 #define NVERT (NEDGE-(NFACE+1)+2)    /* vertex number (=5) by Euler */
 #define NCOLOR 4        /* face color number */
-#define NUNIT 8         /* unit cell number by X & Y */
+#define NUNIT 16         /* unit cell number by X & Y */
 #define EWIDTH 2        /* contour line width */
 #define VDOT 8          /* vertex dot size */
 #define DEFTONE 0       /* default face tone */
@@ -29,7 +29,7 @@ typedef struct {
 
 /* Polytop graph  declaration */
 typedef struct {
-     XVertex* vertex;    /* vertex array */
+    XVertex* vertex;    /* vertex array */
     XFace* face;       /* face array */
     XEdge* edge;    /* edge path array */
 } XPolyGraph;
