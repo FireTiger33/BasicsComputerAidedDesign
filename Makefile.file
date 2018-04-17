@@ -1,0 +1,33 @@
+# Project Makefile for rect
+
+# Exec file name
+
+EXEC=xring
+
+# Linking libraries
+
+LIBS= -lX11 -lm
+
+# Header files names
+
+INCLUDES=xsort.h
+
+# Headers file directories
+
+HEADDIR= -I.
+
+# cc invoking
+
+CC=cc $(HEADDIR)
+
+# object file names
+
+OBJECTS=xsort0.o xsort1.o xsort2.o xoval.o
+
+# project dependence
+
+all: $(OBJECTS) $(EXEC)
+$(OBJECTS): $(INCLUDES)
+$(EXEC): $(OBJECTS) $(INCLUDES)
+	$(CC) -o $(EXEC) $(OBJECTS) $(LIBS) 
+
