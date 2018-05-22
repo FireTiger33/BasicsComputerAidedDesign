@@ -39,14 +39,13 @@ int main(int argc, char *argv[]) {
         XSizeHints hint; /* Geometry WM hints */
         Atom wdw[1]; /* WM delete window atom */
         if (argc < 2)
-            argv[1] = "16x8";
+            argv[1] = "17x8";
         while (1) {
             if (maxisize(&r, argv[1]) == 0)
-                maxisize(&r, argv[1] = "16x8");
+                maxisize(&r, argv[1] = "17x8");
             w = decent(&r);
             if ((h = reset(&r)) < DisplayHeight(dpy, scr))
                 break;
-            argv[1] = "16x8";
         } /* if */
         printf("Now: %s %s (RxN)\n", argv[0], argv[1]);
         fflush(stdout);

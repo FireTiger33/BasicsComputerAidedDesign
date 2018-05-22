@@ -17,7 +17,7 @@ int maxisize(XPiAr2 *pr, char *R0xN) {
     if (((pr->dR = pr->R = R0) < 1) || (N < 1))
         N = R0 = 0; /* invoking defalts after rerun */
     return (pr->Rm = 2 * R0 * N); /* return maximal radius */
-} /* maxisize */
+}
 
 /* Compute Spiral center location */
 
@@ -27,7 +27,7 @@ int decent(XPiAr2 *pr) {
     pr->c[1].x = pr->c[0].x + pr->R; /* = w/2 + (pr->R/2); */
     pr->c[0].y = pr->c[1].y = w / 2 + 8;
     return (w); /* return frame width for window */
-} /* decent */
+}
 
 /* Reset spiral from center */
 
@@ -38,7 +38,7 @@ int reset(XPiAr2 *pr) {
     if (pr->dR < 0)
         pr->dR = -pr->dR;
     return (2 * (pr->c[0].y)); /* return frame height */
-} /* reset */
+}
 
 /* redraw exposed spiral fragment from center */
 
@@ -104,11 +104,11 @@ int twist(Display *dpy, Window win, GC gc, XPiAr2 *pr, int z) {
     int y1 = 300 + 200 * sin((pr->A) * (3.14) * z);
     XClearWindow(dpy, win);
 //XGCvalues.line_style=LineOnOffDash;
-//XDrawArc(dpy, win, gc, pr->c[i].x - pr->R, pr->c[i].y - pr->R, (2*pr->R), (2*pr->R), pr->A, pr->dA);
-    XDrawArc(dpy, win, gc, 300 - 300, 300 - 200, 600, 400, 0, 360 * 64);
+    //XDrawArc(dpy, win, gc, pr->c[i].x - pr->R, pr->c[i].y - pr->R, (2*pr->R), (2*pr->R), pr->A, pr->dA);
+    XDrawArc(dpy, win, gc, -3, 300 - 200, 600, 400, 0, 360 * 64);
     XDrawLine(dpy, win, gc, 300, 300, 2 * 300 - x1, 2 * 300 - y1);
     XDrawLine(dpy, win, gc, 300, 300, x1, y1);
-    XDrawString(dpy, win, gc, 6, 25, "Ctrl-E", 6);//Ctrl-E
+    XDrawString(dpy, win, gc, 6, 25, "Ctrl-E", 6);
     XFlush(dpy);
     amod2pi(pr);
     return (pr->R);
