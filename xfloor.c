@@ -60,7 +60,7 @@ int colorite(Display *dpy) {
 Window CreateWin(Display *dpy, Liter **L, Liter **L2) {                                         /* return Window id */
     XSetWindowAttributes attr;                         /* window attributes */
     int i, j;
-    int x = WID, y = 0;                                            /* window location */
+    int x = 0, y = 0;                                            /* window location */
     gc[2] = XCreateGC(dpy, DefaultRootWindow(dpy), 0, 0);
     XSetForeground(dpy, gc[2], palette[0]);
     attr.override_redirect = True;
@@ -76,7 +76,7 @@ Window CreateWin(Display *dpy, Liter **L, Liter **L2) {                         
         x += WID;
     }
     y += HEI;
-    x = WID;
+    x = 0;
     for (j = 0; j < Nbox; i++, j++) {
         wind[i] = XCreateWindow(dpy, root, x, y, WID, HEI, 1, depth,
                                 InputOutput, CopyFromParent,
@@ -86,6 +86,9 @@ Window CreateWin(Display *dpy, Liter **L, Liter **L2) {                         
         L2[0][j].Coord.y = y;
         x += WID;
     }
+    wind[i] = XCreateWindow(dpy, root, x, y, WID, HEI, 1, depth,
+		    InputOutput, CopyFromParent,
+		    (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
     XMapWindow(dpy, root);
     XMapSubwindows(dpy, root);
     XStoreName(dpy, root, "xpat");
@@ -96,8 +99,7 @@ Window CreateWin(Display *dpy, Liter **L, Liter **L2) {                         
 
 int alloc() {
     void *r;                /* row array pointer */
-    r = calloc(Nbox*2, sizeof(unsigned long));
-//printf("%d\n",Nbox);
+    r = calloc(Nbox*2+1, sizeof(unsigned long));
     wind = (Window *) r;
     return (0);
 }
@@ -113,7 +115,7 @@ int tr(char *str, Liter **L) {
     i = 0;
     while (str[i] != '\0') {
         L[0][i].ch[0] = str[i];
-        printf("%c", L[0][i].ch[0]);
+        //printf("%c", L[0][i].ch[0]);
         i++;
     }
 }
@@ -142,7 +144,8 @@ int rootWnd(Display *dpy) {
 
 //=========findWinNum====================================
 int findWinNum(Window win, int Nbox) {
-    for (int i = 0; i < Nbox*2; i++)
+    int i;
+    for (i = 0; i < Nbox*2+1; i++)
         if (wind[i] == win)
             return (i);
 }
@@ -158,6 +161,7 @@ int wrtLit(Liter **L, Liter **L2) {
         const char *c = L2[0][j].ch;
         XDrawString(dpy, wind[i], gc[0], WID / 2, HEI / 2, c, 1);
     }
+    XDrawString(dpy, wind[i], gc[0], WID / 4, HEI / 2, "EXIT", 4);
 }
 
 
@@ -170,7 +174,8 @@ int main(int argc, char *argv[]) {
     XFontStruct *fnptr;
     int motion = 0;
     char dopolnenie[sizeof(argv[1])];
-    for (int i = 0; i < sizeof(argv[1]); i++) {
+    int i;
+    for (i = 0; i < sizeof(argv[1]); i++) {
         if (argv[1][i] == '0')
             dopolnenie[i] = '1';
         else
@@ -187,8 +192,6 @@ int main(int argc, char *argv[]) {
     colorite(dpy);
     rootWnd(dpy);
     desk = CreateWin(dpy, &L1, &L2);
-
-    puts("1");
     if ((fnptr = XLoadQueryFont(dpy, "9x15")) != NULL)
         XSetFont(dpy, gc[2], fnptr->fid);
     while (done == 0) {
@@ -203,7 +206,10 @@ int main(int argc, char *argv[]) {
                 break;
             case ButtonPress:
                 num = findWinNum(event.xbutton.window, sizeof(argv[1]));
-                printf("%d\n", num);
+		if (event.xbutton.window == wind[Nbox*2]) {
+		    done = 1;
+		    break;
+		}
                 if (num < sizeof(argv[1])) {
                     XClearWindow(dpy, event.xbutton.window);
                     XClearWindow(dpy, event.xbutton.window + sizeof(argv[1]));
@@ -228,17 +234,18 @@ int main(int argc, char *argv[]) {
                         L1[num].ch[0] = '0';
                     }
                 }
-                //XGrabPointer(dpy, wind[num], False, (ButtonReleaseMask |ButtonPressMask| ButtonMotionMask),GrabModeAsync, GrabModeAsync, wind[num], None, CurrentTime);
-                //XWarpPointer(dpy, None, root, 0, 0, 0, 0, Sizes[num].Coord.x+Sizes[num].wid/2, Sizes[num].Coord.y+Sizes[num].hei/2);
-                //startX=event.xbutton.x_root;
-                //startY=event.xbutton.y_root;
-                //X0=Sizes[num].Coord.x;
-                //Y0=Sizes[num].Coord.y;
                 break;
             case KeyPress:
-            case KeyRelease:
-                if (event.xkey.keycode == EXT)
-                    done = 1;
+                if (event.xkey.keycode == EXT) {
+		    int l = 0;
+		    while (l < Nbox*2) {
+			XClearWindow(dpy, wind[l]);
+			l++;
+		    }
+		    tr(argv[1], &L1);
+		    tr(dopolnenie, &L2);
+		    wrtLit(&L1, &L2);
+		}
                 break;
             case MotionNotify:
                 //motion=1;
