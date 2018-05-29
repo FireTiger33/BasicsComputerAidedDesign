@@ -12,8 +12,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define WID 50     /* repeat element width */
-#define HEI 50    /* repeat element height */
+#define WID 30     /* repeat element width */
+#define HEI 30    /* repeat element height */
 
 typedef struct {
     char ch[1];
@@ -49,42 +49,43 @@ int colorite(Display *dpy) {
     }; /* color spector */
     cmap = DefaultColormap(dpy, DefaultScreen(dpy));
     for (i = 0; i < 5; i++) {
-        XParseColor(dpy, cmap, spector[i], &rgb);        //ИЩЕМ RGB ПО НАЗВАНИЮ
+        XParseColor(dpy, cmap, spector[i], &rgb);
         XAllocColor(dpy, cmap, &rgb);
         palette[i] = rgb.pixel;
-    } /* for */
+    }
     return (0);
 } /* colorite */
 //==========Create main window==========================================
 
-Window CreateWin(Display *dpy, Liter **L, Liter **L2) {                                         /* return Window id */
+Window CreateWin(Display *dpy, Liter **L, Liter **L2) {   /* return Window id */
     XSetWindowAttributes attr;                         /* window attributes */
     int i, j;
-    int x = 0, y = 0;                                            /* window location */
+    int x = 0, y = 0;                       /* window location */
     gc[2] = XCreateGC(dpy, DefaultRootWindow(dpy), 0, 0);
     XSetForeground(dpy, gc[2], palette[0]);
     attr.override_redirect = True;
-    attr.event_mask = (ButtonPressMask | ButtonReleaseMask | KeyPressMask | ExposureMask | ButtonMotionMask);
-    attr.background_pixel = palette[0];
+    attr.event_mask = (ButtonPressMask | ButtonReleaseMask |
+		    KeyPressMask | ExposureMask | ButtonMotionMask);
+    attr.background_pixel = palette[2];
     for (i = 0; i < Nbox; i++) {
         wind[i] = XCreateWindow(dpy, root, x, y, WID, HEI, 1, depth,
-                                InputOutput, CopyFromParent,
-                                (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
+                    InputOutput, CopyFromParent,
+                    (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
 
         L[0][i].Coord.x = x;
         L[0][i].Coord.y = y;
-        x += WID;
+        x += (WID + 5);
     }
-    y += HEI;
+    y += (HEI + 5);
     x = 0;
     for (j = 0; j < Nbox; i++, j++) {
         wind[i] = XCreateWindow(dpy, root, x, y, WID, HEI, 1, depth,
-                                InputOutput, CopyFromParent,
-                                (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
+                    InputOutput, CopyFromParent,
+                    (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
 
         L2[0][j].Coord.x = x;
         L2[0][j].Coord.y = y;
-        x += WID;
+        x += (WID + 5);
     }
     wind[i] = XCreateWindow(dpy, root, x, y, WID, HEI, 1, depth,
 		    InputOutput, CopyFromParent,
@@ -131,12 +132,12 @@ int rootWnd(Display *dpy) {
     attr.background_pixel = palette[DEFTONE];           /* background color */
     attr.event_mask = (ButtonPressMask | KeyPressMask);
     scr = DefaultScreen(dpy);
-    root = XCreateWindow(dpy, DefaultRootWindow(dpy), x, y, WID * (Nbox + 2), HEI*2,            //Основное окно
+    root = XCreateWindow(dpy, DefaultRootWindow(dpy), x, y, WID * (Nbox+8), HEI*2+5,     
                          1, depth, InputOutput, CopyFromParent,
                          (CWOverrideRedirect | CWBackPixel | CWEventMask), &attr);
     hint.flags = (PMinSize | PPosition | PMaxSize | PResizeInc);
-    hint.min_width = hint.max_width = WID * (Nbox + 2);
-    hint.min_height = hint.max_height = HEI*2;
+    hint.min_width = hint.max_width = WID * (Nbox+8);
+    hint.min_height = hint.max_height = HEI*2+5;
     hint.x = x;
     hint.y = y;
     XSetNormalHints(dpy, root, &hint);
@@ -173,15 +174,15 @@ int main(int argc, char *argv[]) {
     int startX, startY;
     XFontStruct *fnptr;
     int motion = 0;
-    char dopolnenie[sizeof(argv[1])];
     int i;
-    for (i = 0; i < sizeof(argv[1]); i++) {
+    tr(argv[1], &L1);
+    char dopolnenie[Nbox];
+    for (i = 0; i < Nbox; i++) {
         if (argv[1][i] == '0')
             dopolnenie[i] = '1';
         else
             dopolnenie[i] = '0';
     }
-    tr(argv[1], &L1);
     tr(dopolnenie, &L2);
     XEvent event;                   /* Event structure */
     unsigned int done = 0;          /* exit code */
@@ -205,14 +206,14 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case ButtonPress:
-                num = findWinNum(event.xbutton.window, sizeof(argv[1]));
+                num = findWinNum(event.xbutton.window, Nbox);
 		if (event.xbutton.window == wind[Nbox*2]) {
 		    done = 1;
 		    break;
 		}
-                if (num < sizeof(argv[1])) {
+                if (num < Nbox) {
                     XClearWindow(dpy, event.xbutton.window);
-                    XClearWindow(dpy, event.xbutton.window + sizeof(argv[1]));
+                    XClearWindow(dpy, event.xbutton.window + Nbox);
                     if (L1[num].ch[0] == '1') {
                         L1[num].ch[0] = '0';
                         L2[num].ch[0] = '1';
@@ -223,8 +224,8 @@ int main(int argc, char *argv[]) {
                     }
                 } else {
                     XClearWindow(dpy, event.xbutton.window);
-                    XClearWindow(dpy, event.xbutton.window - sizeof(argv[1]));
-                    num -= sizeof(argv[1]);
+                    XClearWindow(dpy, event.xbutton.window - Nbox);
+                    num -= Nbox;
                     if (L2[num].ch[0] == '1') {
                         L2[num].ch[0] = '0';
                         L1[num].ch[0] = '1';
@@ -248,12 +249,7 @@ int main(int argc, char *argv[]) {
 		}
                 break;
             case MotionNotify:
-                //motion=1;
-                //num=findWinNum(event.xmotion.window,argc-1);
-                //perecritie=booksir(dpy,&event, argc-1,num,startX,startY);
-                //startX=event.xmotion.x_root;
-                //startY=event.xmotion.y_root;
-                break;
+		break;
             default:
                 break;
         }
